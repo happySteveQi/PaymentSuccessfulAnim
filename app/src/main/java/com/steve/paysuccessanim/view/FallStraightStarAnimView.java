@@ -2,6 +2,7 @@ package com.steve.paysuccessanim.view;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -38,7 +39,7 @@ import java.util.Random;
  *
  */
 
-public class FallStarAnimView extends FrameLayout {
+public class FallStraightStarAnimView extends FrameLayout {
 
     private Context mContext = null;
     private int mMaxWidth = 0;
@@ -51,17 +52,17 @@ public class FallStarAnimView extends FrameLayout {
     private Handler mHandler = new Handler();
 
 
-    public FallStarAnimView(@NonNull Context context) {
+    public FallStraightStarAnimView(@NonNull Context context) {
         this(context,null);
         this.mContext = context;
     }
 
-    public FallStarAnimView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public FallStraightStarAnimView(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs,0);
         this.mContext = context;
     }
 
-    public FallStarAnimView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
+    public FallStraightStarAnimView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.mContext = context;
         initMeasure();
@@ -105,7 +106,7 @@ public class FallStarAnimView extends FrameLayout {
      * 开始动画
      */
     public void startAnim(){
-//        mHandler.post(starStartRunnable);
+        mHandler.post(starStartRunnable);
         mHandler.post(starStartRunnable);
     }
 
@@ -122,31 +123,19 @@ public class FallStarAnimView extends FrameLayout {
         @Override
         public void run() {
             AnomalyView anomalyView = new AnomalyView(mContext);
-            addView(anomalyView);
-            bezierAnim(anomalyView);
+
+            fallAnim(anomalyView);
             mHandler.postDelayed(starStartRunnable,2);
         }
     };
 
-    /**
-     * 动画实现
-     */
-    private void bezierAnim(final View view){
+    private void fallAnim(final View view){
 
-        PointF startPointF = new PointF(new Random().nextInt(mMaxWidth),-50);//起始点
-        PointF endPointF = new PointF(new Random().nextInt(mMaxWidth),mMaxHeight);//结束点
-
-//        ValueAnimator objectAnimator = ValueAnimator.ofObject(new BezierEvaluator(getScreenRandomPointF(1),getScreenRandomPointF(2)),startPointF,endPointF);
-        ValueAnimator objectAnimator = ValueAnimator.ofObject(new BezierEvaluator(getScreenRandomPointF(1),getScreenRandomPointF(2)),startPointF,endPointF);
-        objectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                PointF pointF = (PointF) animation.getAnimatedValue();
-                view.setX(pointF.x);
-                view.setY(pointF.y);
-            }
-        });
-        objectAnimator.setInterpolator(mAccelerateInterpolator);
+        LayoutParams layoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+        layoutParams.leftMargin = new Random().nextInt(mMaxWidth-50);// 碎片最大50
+        addView(view,layoutParams);
+        ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(view,"translationY",-50f,mMaxHeight);
+        objectAnimator.setInterpolator(mLinearInterpolator);
         objectAnimator.setTarget(view);
         objectAnimator.setDuration(1500);
         objectAnimator.addListener(new AnimatorListenerAdapter() {
@@ -157,63 +146,6 @@ public class FallStarAnimView extends FrameLayout {
             }
         });
         objectAnimator.start();
-    }
-
-
-    /**
-     * 获取屏幕上的随机两个控制点
-     * @param number  第几个控制点
-     * @return
-     */
-    private PointF getScreenRandomPointF(int number){
-        PointF pointF = new PointF();
-        pointF.x = new Random().nextInt(mMaxWidth*2)-mMaxWidth/2; //尽量向左右两边扩散一点
-        pointF.y = new Random().nextInt((mMaxHeight/2)*number);
-        return pointF;
-    }
-
-    /**
-     * 贝塞尔路径实现
-     * 暂时放置两个控制点 后面根据需求再加
-     * 三阶公式 B(T) = p0((1-t)(1-t)(1-t))+3P1t((1-t)(1-t))+3p2(t*t)(1-t)+p3(t*t*t)
-     * 二阶公式 B(T) = (1-t)*(1-t)*P0+2t(1-t)P1+t*t*P2
-     * 一阶公式 B(T) = P0+(P1-P0)*t=(1-t)P0+t*P1
-     */
-    private class BezierEvaluator implements TypeEvaluator<PointF> {
-
-        private PointF mControlPointFOne = null;
-        private PointF mControlPointFTwo = null;
-
-        public BezierEvaluator(PointF mControlPointFOne, PointF mControlPointFTwo) {
-            this.mControlPointFOne = mControlPointFOne;
-            this.mControlPointFTwo = mControlPointFTwo;
-        }
-
-        @Override
-        public PointF evaluate(float fraction, PointF startValue, PointF endValue) {
-
-            float time  = fraction;
-            PointF resultPointF = new PointF(); //结果值
-            PointF startPointF  = startValue; //开始控制点
-            PointF endPointF = endValue;//结束控制点
-            resultPointF.x = startPointF.x
-                    + (endPointF.x-startPointF.x)*(time);
-
-            resultPointF.y = startPointF.y
-                    + (endPointF.y-startPointF.y)*(time);
-
-//            resultPointF.x = startPointF.x*((1-time)*(1-time)*(1-time))
-//                    +3*mControlPointFOne.x*time*((1-time)*(1-time))
-//                    +3*mControlPointFTwo.x*(time*time)*(1-time)
-//                    + endPointF.x*(time*time*time);
-//
-//            resultPointF.y = startPointF.y*((1-time)*(1-time)*(1-time))
-//                    +3*mControlPointFOne.y*time*((1-time)*(1-time))
-//                    +3*mControlPointFTwo.y*(time*time)*(1-time)
-//                    +endPointF.y*(time*time*time);
-
-            return resultPointF;
-        }
     }
 
 

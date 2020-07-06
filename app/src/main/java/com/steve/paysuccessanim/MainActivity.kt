@@ -3,6 +3,7 @@ package com.steve.paysuccessanim
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
@@ -24,16 +25,24 @@ class MainActivity : AppCompatActivity() {
 
         btn_start.setOnClickListener {
             split_anim_view.visibility = View.VISIBLE
-
-            ctv_ok.visibility = View.VISIBLE
-            animatorSet.start()
+            split_anim_view.startAnim()
+            ctv_ok.visibility = View.INVISIBLE
+//            animatorSet.start()
 
         }
         btn_stop.setOnClickListener {
-            ctv_ok.visibility = View.INVISIBLE
-            split_anim_view.visibility = View.INVISIBLE
-            ctv_ok.stop()
+            split_anim_view.stopAnim()
 
+            Handler().postDelayed(Runnable {
+                ctv_ok.visibility = View.VISIBLE
+                animatorSet.start()
+
+            },500)
+            Handler().postDelayed(Runnable {
+                ctv_ok.visibility = View.INVISIBLE
+                split_anim_view.visibility = View.INVISIBLE
+
+            },5000)
         }
     }
 

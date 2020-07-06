@@ -26,6 +26,12 @@
         android:text="click to stop"
         app:layout_constraintTop_toBottomOf="@id/btn_start"
         />
+    <com.steve.paysuccessanim.view.FallStraightStarAnimView
+        android:id="@+id/split_anim_view"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <com.steve.paysuccessanim.view.CTickView
         android:id="@+id/ctv_ok"
         android:layout_width="100dp"
@@ -38,9 +44,5 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         />
-    <com.steve.paysuccessanim.view.SplitStarAnimView
-        android:id="@+id/split_anim_view"
-        android:visibility="invisible"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
